@@ -26,30 +26,25 @@ let allCards = [];
 
 function createImageCard() {
 
-    const randomSeed =
-        Math.floor(Math.random() * 1000000);
-
     const card = document.createElement("div");
 
     card.className = "gallery-item fade";
 
-    const title =
-        "تصویر شماره " + imageCounter;
+    const width = 600;
+    const height = 800;
+
+    const imageUrl =
+        `https://source.unsplash.com/random/${width}x${height}?sig=${Date.now()}${Math.random()}`;
 
     card.innerHTML = `
-
         <img
-        loading="lazy"
-        src="https://picsum.photos/600/800?random=${randomSeed}"
-        alt="${title}"
+            loading="lazy"
+            src="${imageUrl}"
+            alt="تصویر"
         >
-
         <div class="gallery-caption">
-
-            <h4>${title}</h4>
-
+            <h4>تصویر جدید</h4>
         </div>
-
     `;
 
     gallery.appendChild(card);
@@ -57,9 +52,6 @@ function createImageCard() {
     allCards.push(card);
 
     observer.observe(card);
-
-    imageCounter++;
-
 }
 
 // بارگذاری دسته‌ای
