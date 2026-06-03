@@ -1,94 +1,152 @@
+const API_KEY = "LBX1wKWqpXvrZQLXA6xbDaZ376NBhcDZmPAAgBeKyFNF5FtYlpYRBeXw";
+
+const gallery =
+document.getElementById("galleryContainer");
+
+const searchInput =
+document.getElementById("searchInput");
+
+let page = 1;
+let loadingImages = false;
+
 // Loader
 
 window.addEventListener("load", () => {
 
     setTimeout(() => {
 
-        document.getElementById("loader").style.display = "none";
+        const loader =
+        document.getElementById("loader");
 
-    }, 1200);
+        if(loader){
+            loader.style.display = "none";
+        }
+
+    }, 1000);
 
 });
 
-// Gallery
+// Intersection Observer
 
-const gallery = document.getElementById("galleryContainer");
+const observer =
+new IntersectionObserver(
 
-const loading = document.getElementById("loadingMore");
+(entries) => {
 
-const searchInput = document.getElementById("searchInput");
+    entries.forEach(entry => {
 
-let imageCounter = 1;
+        if(entry.isIntersecting){
 
-let allCards = [];
+            entry.target.classList.add("show");
 
-// ساخت تصویر تصادفی
+        }
 
-function createImageCard() {
+    });
 
-    const card = document.createElement("div");
+},
 
-    card.className = "gallery-item fade";
-
-    const width = 600;
-    const height = 800;
-
-    const imageUrl =
-        `https://source.unsplash.com/random/${width}x${height}?sig=${Date.now()}${Math.random()}`;
-
-    card.innerHTML = `
-        <img
-            loading="lazy"
-            src="${imageUrl}"
-            alt="تصویر"
-        >
-        <div class="gallery-caption">
-            <h4>تصویر جدید</h4>
-        </div>
-    `;
-
-    gallery.appendChild(card);
-
-    allCards.push(card);
-
-    observer.observe(card);
+{
+    threshold:0.1
 }
 
-// بارگذاری دسته‌ای
+);
 
-function loadImages(count = 20) {
+// دریافت تصاویر از Pexels
 
-    for (let i = 0; i < count; i++) {
+async function loadImages(){
 
-        createImageCard();
+    if(loadingImages) return;
+
+    loadingImages = true;
+
+    try{
+
+        const response =
+        await fetch(
+
+        `https://api.pexels.com/v1/search?query=persian history&per_page=20&page=${page}`,
+
+        {
+            headers:{
+                Authorization:API_KEY
+            }
+        }
+
+        );
+
+        const data =
+        await response.json();
+
+        if(data.photos){
+
+            data.photos.forEach(photo=>{
+
+                const card =
+                document.createElement("div");
+
+                card.className =
+                "gallery-item fade";
+
+                card.innerHTML = `
+
+                    <img
+                    src="${photo.src.large}"
+                    alt="${photo.alt || 'Persian Image'}"
+                    loading="lazy">
+
+                    <div class="gallery-caption">
+
+                        <h4>
+                        ${photo.alt || "Persian Image"}
+                        </h4>
+
+                    </div>
+
+                `;
+
+                gallery.appendChild(card);
+
+                observer.observe(card);
+
+            });
+
+            page++;
+
+        }
+
+    }catch(error){
+
+        console.error(
+        "Pexels Error:",
+        error
+        );
 
     }
+
+    loadingImages = false;
 
 }
 
 // بارگذاری اولیه
 
-loadImages(40);
+loadImages();
 
 // Infinite Scroll
 
-window.addEventListener("scroll", () => {
+window.addEventListener("scroll",()=>{
 
-    const scrollTop =
-        window.scrollY;
+    if(
 
-    const viewport =
-        window.innerHeight;
+        window.innerHeight +
+        window.scrollY
 
-    const height =
-        document.body.offsetHeight;
+        >=
 
-    if (
-        scrollTop + viewport >
-        height - 1200
-    ) {
+        document.body.offsetHeight - 1200
 
-        loadImages(20);
+    ){
+
+        loadImages();
 
     }
 
@@ -96,25 +154,33 @@ window.addEventListener("scroll", () => {
 
 // Search
 
-searchInput.addEventListener("keyup", () => {
+searchInput.addEventListener("keyup",()=>{
 
     const value =
-        searchInput.value
-        .toLowerCase()
-        .trim();
+    searchInput.value
+    .toLowerCase()
+    .trim();
 
-    allCards.forEach(card => {
+    const cards =
+    document.querySelectorAll(
+    ".gallery-item"
+    );
+
+    cards.forEach(card=>{
 
         const text =
-            card.innerText.toLowerCase();
+        card.innerText
+        .toLowerCase();
 
-        if (text.includes(value)) {
+        if(text.includes(value)){
 
-            card.style.display = "block";
+            card.style.display =
+            "block";
 
-        } else {
+        }else{
 
-            card.style.display = "none";
+            card.style.display =
+            "none";
 
         }
 
@@ -125,28 +191,36 @@ searchInput.addEventListener("keyup", () => {
 // Scroll Top
 
 const scrollBtn =
-    document.getElementById("scrollTop");
+document.getElementById(
+"scrollTop"
+);
 
-window.addEventListener("scroll", () => {
+window.addEventListener(
+"scroll",
+()=>{
 
-    if (window.scrollY > 500) {
+    if(window.scrollY > 500){
 
-        scrollBtn.style.display = "block";
+        scrollBtn.style.display =
+        "block";
 
-    } else {
+    }else{
 
-        scrollBtn.style.display = "none";
+        scrollBtn.style.display =
+        "none";
 
     }
 
 });
 
-scrollBtn.addEventListener("click", () => {
+scrollBtn.addEventListener(
+"click",
+()=>{
 
     window.scrollTo({
 
-        top: 0,
-        behavior: "smooth"
+        top:0,
+        behavior:"smooth"
 
     });
 
@@ -155,25 +229,31 @@ scrollBtn.addEventListener("click", () => {
 // Theme
 
 const themeBtn =
-    document.getElementById("themeBtn");
+document.getElementById(
+"themeBtn"
+);
 
-themeBtn.addEventListener("click", () => {
+themeBtn.addEventListener(
+"click",
+()=>{
 
     document.body.classList.toggle(
-        "light-mode"
+    "light-mode"
     );
 
-    if (
-        document.body.classList.contains(
-            "light-mode"
-        )
-    ) {
+    if(
+    document.body.classList.contains(
+    "light-mode"
+    )
+    ){
 
-        themeBtn.innerHTML = "☀️";
+        themeBtn.innerHTML =
+        "☀️";
 
-    } else {
+    }else{
 
-        themeBtn.innerHTML = "🌙";
+        themeBtn.innerHTML =
+        "🌙";
 
     }
 
@@ -182,51 +262,32 @@ themeBtn.addEventListener("click", () => {
 // Mobile Menu
 
 const menuBtn =
-    document.getElementById("menuBtn");
+document.getElementById(
+"menuBtn"
+);
 
 const navMenu =
-    document.getElementById("navMenu");
+document.getElementById(
+"navMenu"
+);
 
-menuBtn.addEventListener("click", () => {
+menuBtn.addEventListener(
+"click",
+()=>{
 
-    navMenu.classList.toggle("active");
+    navMenu.classList.toggle(
+    "active"
+    );
 
 });
 
-// Scroll Animation
-
-const observer =
-new IntersectionObserver(
-
-    entries => {
-
-        entries.forEach(entry => {
-
-            if (entry.isIntersecting) {
-
-                entry.target.classList.add(
-                    "show"
-                );
-
-            }
-
-        });
-
-    },
-
-    {
-        threshold: 0.1
-    }
-
-);
-
-// افکت روی سکشن‌ها
+// Animation Sections
 
 document
 .querySelectorAll(
 ".content-section"
 )
-.forEach(el => {
+.forEach(el=>{
 
     el.classList.add("fade");
 
@@ -234,50 +295,6 @@ document
 
 });
 
-// بارگذاری بیشتر در فواصل زمانی
-
-setInterval(() => {
-
-    if (allCards.length < 1000) {
-
-        loadImages(5);
-
-    }
-
-}, 15000);
-
-// تغییر تصویر هدر هنگام رفرش
-
-const heroImages = [
-
-"https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2000",
-
-"https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2000",
-
-"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=2000",
-
-"https://images.unsplash.com/photo-1519608487953-e999c86e7455?q=80&w=2000",
-
-"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?q=80&w=2000"
-
-];
-
-const randomHero =
-
-heroImages[
-Math.floor(
-Math.random() *
-heroImages.length
-)
-];
-
-document.getElementById(
-"hero"
-).style.backgroundImage =
-`url('${randomHero}')`;
-
-// کنسول خوش‌آمدگویی 😎
-
 console.log(
-"🦁 سایت شیر و خورشید آماده است."
+"🦁 Pexels Gallery Loaded"
 );
